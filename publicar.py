@@ -10,7 +10,9 @@ Uso:
 """
 import argparse, datetime, json, os, sys, time, urllib.parse, urllib.request, urllib.error
 
-API = "https://graph.instagram.com/v21.0"
+API_IG = "https://graph.instagram.com/v21.0"   # token IGAA (login do Instagram)
+API_FB = "https://graph.facebook.com/v21.0"    # token EAA (login do Facebook / unificado)
+API = API_IG
 RAW_BASE = os.environ.get("RAW_BASE", "https://raw.githubusercontent.com/cheeenrique/managecode-instagram/main")
 AQUI = os.path.dirname(os.path.abspath(__file__))
 
@@ -66,8 +68,20 @@ def main():
         print(json.dumps({"data": hoje, "item": item}, ensure_ascii=False))
         return
 
-    eu = chamar("GET", "me", fields="user_id,username")
-    print(f"Conta: @{eu.get('username')} ({eu.get('user_id')})")
+    global API
+    if os.environ["IG_TOKEN"].startswith("EAA"):
+        API = API_FB
+        paginas = chamar("GET", "me/accounts",
+                         fields="name,instagram_business_account{id,username}").get("data", [])
+        contas = [p["instagram_business_account"] for p in paginas if p.get("instagram_business_account")]
+        alvo = [c for c in contas if c.get("username") == "managecode"] or contas
+        if not alvo:
+            sys.exit("ERRO: o token não enxerga nenhuma conta do Instagram ligada a uma Página do Facebook")
+        eu = {"user_id": alvo[0]["id"], "username": alvo[0].get("username")}
+    else:
+        eu = chamar("GET", "me", fields="user_id,username")
+    ig = eu["user_id"] if API == API_FB else "me"
+    print(f"Conta: @{eu.get('username')} ({eu.get('user_id')}) via {API.split('/')[2]}")
 
     if not item:
         proximas = sorted(d for d in agenda if d > hoje)
@@ -90,7 +104,7 @@ def main():
     print(f"{hoje}: {post} ({n} lâmina(s))")
 
     # Evita publicar duas vezes o mesmo post
-    recentes = chamar("GET", "me/media", fields="caption,permalink", limit=15).get("data", [])
+    recentes = chamar("GET", f"{ig}/media", fields="caption,permalink", limit=15).get("data", [])
     inicio = legenda[:80]
     for m in recentes:
         if (m.get("caption") or "").strip().startswith(inicio):
@@ -102,18 +116,18 @@ def main():
         return
 
     if len(urls) == 1:
-        cont = chamar("POST", "me/media", image_url=urls[0], caption=legenda)
+        cont = chamar("POST", f"{ig}/media", image_url=urls[0], caption=legenda)
     else:
         filhos = []
         for u in urls:
-            c = chamar("POST", "me/media", image_url=u, is_carousel_item="true")
+            c = chamar("POST", f"{ig}/media", image_url=u, is_carousel_item="true")
             filhos.append(c["id"])
         for f in filhos:
             esperar_pronto(f)
-        cont = chamar("POST", "me/media", media_type="CAROUSEL",
+        cont = chamar("POST", f"{ig}/media", media_type="CAROUSEL",
                       children=",".join(filhos), caption=legenda)
     esperar_pronto(cont["id"])
-    pub = chamar("POST", "me/media_publish", creation_id=cont["id"])
+    pub = chamar("POST", f"{ig}/media_publish", creation_id=cont["id"])
     link = chamar("GET", pub["id"], fields="permalink").get("permalink")
     print(f"PUBLICADO: {post} -> {link}")
 
