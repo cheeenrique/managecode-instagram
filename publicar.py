@@ -14,6 +14,7 @@ API_IG = "https://graph.instagram.com/v21.0"   # token IGAA (login do Instagram)
 API_FB = "https://graph.facebook.com/v21.0"    # token EAA (login do Facebook / unificado)
 API = API_IG
 RAW_BASE = os.environ.get("RAW_BASE", "https://raw.githubusercontent.com/cheeenrique/managecode-instagram/main")
+IG_USER_ID = os.environ.get("IG_USER_ID", "17841476644365202")  # @managecode
 AQUI = os.path.dirname(os.path.abspath(__file__))
 
 
@@ -71,13 +72,8 @@ def main():
     global API
     if os.environ["IG_TOKEN"].startswith("EAA"):
         API = API_FB
-        paginas = chamar("GET", "me/accounts",
-                         fields="name,instagram_business_account{id,username}").get("data", [])
-        contas = [p["instagram_business_account"] for p in paginas if p.get("instagram_business_account")]
-        alvo = [c for c in contas if c.get("username") == "managecode"] or contas
-        if not alvo:
-            sys.exit("ERRO: o token não enxerga nenhuma conta do Instagram ligada a uma Página do Facebook")
-        eu = {"user_id": alvo[0]["id"], "username": alvo[0].get("username")}
+        conta = chamar("GET", IG_USER_ID, fields="id,username")
+        eu = {"user_id": conta["id"], "username": conta.get("username")}
     else:
         eu = chamar("GET", "me", fields="user_id,username")
     ig = eu["user_id"] if API == API_FB else "me"
