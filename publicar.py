@@ -5,6 +5,8 @@ Uso:
   IG_TOKEN=... python3 publicar.py              # publica o post de hoje (America/Sao_Paulo)
   IG_TOKEN=... python3 publicar.py --data 2026-12-01
   IG_TOKEN=... python3 publicar.py --teste      # só confere token, agenda e imagens; não publica
+  IG_TOKEN=... python3 publicar.py --urls "url1,url2,..."   # posts do Canva: links exportados na hora
+  python3 publicar.py --info                     # só mostra o que está agendado para hoje (sem token)
 """
 import argparse, datetime, json, os, sys, time, urllib.parse, urllib.request, urllib.error
 
@@ -52,11 +54,17 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--data")
     ap.add_argument("--teste", action="store_true")
+    ap.add_argument("--urls", help="links das imagens, separados por vírgula (posts do Canva)")
+    ap.add_argument("--info", action="store_true", help="mostra o item de hoje em JSON e sai")
     a = ap.parse_args()
 
     hoje = a.data or (datetime.datetime.utcnow() - datetime.timedelta(hours=3)).date().isoformat()
     agenda = json.load(open(os.path.join(AQUI, "agenda.json")))
     item = agenda.get(hoje)
+
+    if a.info:
+        print(json.dumps({"data": hoje, "item": item}, ensure_ascii=False))
+        return
 
     eu = chamar("GET", "me", fields="user_id,username")
     print(f"Conta: @{eu.get('username')} ({eu.get('user_id')})")
@@ -68,12 +76,18 @@ def main():
 
     post, n = item["post"], item["slides"]
     legenda = open(os.path.join(AQUI, "posts", post, "legenda.txt")).read().strip()
-    urls = [f"{RAW_BASE}/posts/{post}/{i:02d}.jpg" for i in range(1, n + 1)]
-    print(f"{hoje}: {post} ({n} lâminas)")
-
-    faltando = [u for u in urls if not url_ok(u)]
-    if faltando:
-        sys.exit("ERRO: imagens inacessíveis:\n" + "\n".join(faltando))
+    if a.urls:
+        urls = [u.strip() for u in a.urls.split(",") if u.strip()]
+        if len(urls) != n:
+            sys.exit(f"ERRO: {post} tem {n} lâminas, mas vieram {len(urls)} links")
+    elif item.get("canva_design_id"):
+        sys.exit(f"ERRO: {post} está no Canva ({item['canva_design_id']}). Exporte em JPG e passe os links com --urls")
+    else:
+        urls = [f"{RAW_BASE}/posts/{post}/{i:02d}.jpg" for i in range(1, n + 1)]
+        faltando = [u for u in urls if not url_ok(u)]
+        if faltando:
+            sys.exit("ERRO: imagens inacessíveis:\n" + "\n".join(faltando))
+    print(f"{hoje}: {post} ({n} lâmina(s))")
 
     # Evita publicar duas vezes o mesmo post
     recentes = chamar("GET", "me/media", fields="caption,permalink", limit=15).get("data", [])
@@ -87,17 +101,19 @@ def main():
         print("Teste OK: token válido, agenda e imagens acessíveis. Nada foi publicado.")
         return
 
-    filhos = []
-    for u in urls:
-        c = chamar("POST", "me/media", image_url=u, is_carousel_item="true")
-        filhos.append(c["id"])
-    for f in filhos:
-        esperar_pronto(f)
-
-    carrossel = chamar("POST", "me/media", media_type="CAROUSEL",
-                       children=",".join(filhos), caption=legenda)
-    esperar_pronto(carrossel["id"])
-    pub = chamar("POST", "me/media_publish", creation_id=carrossel["id"])
+    if len(urls) == 1:
+        cont = chamar("POST", "me/media", image_url=urls[0], caption=legenda)
+    else:
+        filhos = []
+        for u in urls:
+            c = chamar("POST", "me/media", image_url=u, is_carousel_item="true")
+            filhos.append(c["id"])
+        for f in filhos:
+            esperar_pronto(f)
+        cont = chamar("POST", "me/media", media_type="CAROUSEL",
+                      children=",".join(filhos), caption=legenda)
+    esperar_pronto(cont["id"])
+    pub = chamar("POST", "me/media_publish", creation_id=cont["id"])
     link = chamar("GET", pub["id"], fields="permalink").get("permalink")
     print(f"PUBLICADO: {post} -> {link}")
 
