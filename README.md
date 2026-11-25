@@ -5,8 +5,10 @@ Fila de posts semanais do @managecode, publicados pela API oficial do Instagram 
 | Data | Post | Tema | Onde está a arte |
 |---|---|---|---|
 | ter 01/12/2026 | post-10 | Quanto custa uma tarefa manual? | JPG no repo · Canva DAHb4AypOS0 |
+| qui 03/12/2026 | reel-portfolio-1 | Reel: portfólio "Do desktop ao celular" | posts/reel-portfolio-1/video.mp4 |
 | ter 08/12/2026 | post-11 | 5 perguntas antes de contratar | JPG no repo · Canva DAHb4F14VIM |
 | ter 15/12/2026 | post-12 | Checklist de fim de ano | JPG no repo · Canva DAHb4LFMf74 |
+| qui 17/12/2026 | reel-portfolio-2 | Reel: portfólio "Mosaico" | posts/reel-portfolio-2/video.mp4 |
 | ter 22/12/2026 | post-13 | Planejando 2027 | JPG no repo · Canva DAHb4JzTvFI |
 | qui 24/12/2026 | natal-2026 | Feliz Natal | JPG no repo · Canva DAHb4N0Wt9s |
 | ter 29/12/2026 | post-14 | Sistema pronto ou sob medida? | JPG no repo · Canva DAHb4Kprzz8 |
