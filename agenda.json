@@ -1,22 +1,23 @@
 {
   "2026-12-01": {
-    "post": "post-09",
-    "slides": 6
-  },
-  "2026-12-08": {
     "post": "post-10",
     "slides": 6,
     "canva_design_id": "DAHb4AypOS0"
   },
-  "2026-12-15": {
+  "2026-12-08": {
     "post": "post-11",
     "slides": 6,
     "canva_design_id": "DAHb4F14VIM"
   },
-  "2026-12-22": {
+  "2026-12-15": {
     "post": "post-12",
     "slides": 6,
     "canva_design_id": "DAHb4LFMf74"
+  },
+  "2026-12-22": {
+    "post": "post-13",
+    "slides": 6,
+    "canva_design_id": "DAHb4JzTvFI"
   },
   "2026-12-24": {
     "post": "natal-2026",
@@ -24,9 +25,9 @@
     "canva_design_id": "DAHb4N0Wt9s"
   },
   "2026-12-29": {
-    "post": "post-13",
+    "post": "post-14",
     "slides": 6,
-    "canva_design_id": "DAHb4JzTvFI"
+    "canva_design_id": "DAHb4Kprzz8"
   },
   "2026-12-31": {
     "post": "ano-novo-2027",
@@ -34,11 +35,6 @@
     "canva_design_id": "DAHb4NUV6Lg"
   },
   "2027-01-05": {
-    "post": "post-14",
-    "slides": 6,
-    "canva_design_id": "DAHb4Kprzz8"
-  },
-  "2027-01-12": {
     "post": "post-15",
     "slides": 6,
     "canva_design_id": "DAHb4B0Vo10"
